@@ -1,6 +1,7 @@
 # Datadog SDK for Android and Android TV
 
 > A client-side Android and Android TV library to interact with Datadog.
+>
 
 ## Getting Started
 
