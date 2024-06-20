@@ -17,6 +17,10 @@ variables:
   KUBERNETES_MEMORY_REQUEST: "8Gi"
   KUBERNETES_MEMORY_LIMIT: "16Gi"
 
+workflow:
+  auto_cancel:
+    on_new_commit: interruptible
+
 stages:
   - ci-image
   - security
@@ -59,6 +63,7 @@ create_key:
 
 static-analysis:
   stage: analysis
+  interruptible: true
   variables:
     DETEKT_PUBLIC_API: "true"
     DETEKT_CUSTOM_RULES_BUILD_TASK: "assembleLibrariesRelease :tools:detekt:jar"
@@ -76,6 +81,7 @@ analysis:licenses:
   image: $CI_IMAGE_DOCKER
   stage: analysis
   timeout: 30m
+  interruptible: true
   script:
     - GRADLE_OPTS="-Xmx3072m" ./gradlew checkThirdPartyLicensesAll --stacktrace --no-daemon
 
@@ -86,6 +92,7 @@ test:debug:
   tags: [ "arch:amd64" ]
   image: $CI_IMAGE_DOCKER
   stage: test
+  interruptible: true
   timeout: 1h
   cache:
     key: $CI_COMMIT_REF_SLUG
@@ -111,6 +118,7 @@ test:tools:
   tags: [ "arch:amd64" ]
   image: $CI_IMAGE_DOCKER
   stage: test
+  interruptible: true
   timeout: 1h
   cache:
     key: $CI_COMMIT_REF_SLUG
@@ -128,6 +136,7 @@ test:kover:
   tags: [ "arch:amd64" ]
   image: $CI_IMAGE_DOCKER
   stage: test
+  interruptible: true
   timeout: 1h
   cache:
     key: $CI_COMMIT_REF_SLUG
@@ -160,6 +169,7 @@ test-pyramid:single-fit-logs:
   tags: [ "arch:amd64" ]
   image: $CI_IMAGE_DOCKER
   stage: test-pyramid
+  interruptible: true
   timeout: 1h
   cache:
     key: $CI_COMMIT_REF_SLUG
@@ -181,6 +191,7 @@ test-pyramid:single-fit-rum:
   tags: [ "arch:amd64" ]
   image: $CI_IMAGE_DOCKER
   stage: test-pyramid
+  interruptible: true
   timeout: 1h
   cache:
     key: $CI_COMMIT_REF_SLUG
@@ -202,6 +213,7 @@ test-pyramid:single-fit-trace:
   tags: [ "arch:amd64" ]
   image: $CI_IMAGE_DOCKER
   stage: test-pyramid
+  interruptible: true
   timeout: 1h
   cache:
     key: $CI_COMMIT_REF_SLUG
@@ -223,6 +235,7 @@ test-pyramid:publish-e2e-synthetics:
   tags: [ "arch:amd64" ]
   image: $CI_IMAGE_DOCKER
   stage: test-pyramid
+  interruptible: true
   timeout: 1h
   only:
     - develop
@@ -250,6 +263,7 @@ test-pyramid:publish-webview-synthetics:
   tags: [ "arch:amd64" ]
   image: $CI_IMAGE_DOCKER
   stage: test-pyramid
+  interruptible: true
   timeout: 1h
   only:
     - develop
