@@ -155,6 +155,7 @@ class SampleApplication : Application() {
                     useCustomEndpoint(BuildConfig.DD_OVERRIDE_SESSION_REPLAY_URL)
                 }
             }
+                .setAutomaticStart(enable = false)
             .setPrivacy(SessionReplayPrivacy.MASK_USER_INPUT)
             .addExtensionSupport(MaterialExtensionSupport())
             .build()

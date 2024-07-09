@@ -111,6 +111,8 @@ interface com.datadog.android.rum.RumMonitor
   fun getAttributes(): Map<String, Any?>
   fun clearAttributes()
   fun stopSession()
+  fun startRecording()
+  fun stopRecording()
   var debug: Boolean
   fun _getInternal(): _RumInternalProxy?
 enum com.datadog.android.rum.RumPerformanceMetric

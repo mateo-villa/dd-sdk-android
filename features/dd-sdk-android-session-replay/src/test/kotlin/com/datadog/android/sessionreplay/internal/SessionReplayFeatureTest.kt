@@ -42,6 +42,7 @@ import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.inOrder
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoInteractions
@@ -99,6 +100,7 @@ internal class SessionReplayFeatureTest {
             sdkCore = mockSdkCore,
             customEndpointUrl = fakeConfiguration.customEndpointUrl,
             privacy = fakeConfiguration.privacy,
+                automaticStart = fakeConfiguration.automaticStart,
             rateBasedSampler = mockSampler
         ) { _, _, _, _ -> mockRecorder }
     }
@@ -122,6 +124,7 @@ internal class SessionReplayFeatureTest {
             privacy = fakeConfiguration.privacy,
             customMappers = emptyList(),
             customOptionSelectorDetectors = emptyList(),
+                automaticStart = fakeConfiguration.automaticStart,
             sampleRate = fakeConfiguration.sampleRate
         )
 
@@ -142,6 +145,7 @@ internal class SessionReplayFeatureTest {
             privacy = fakeConfiguration.privacy,
             customMappers = emptyList(),
             customOptionSelectorDetectors = emptyList(),
+                automaticStart = fakeConfiguration.automaticStart,
             sampleRate = fakeConfiguration.sampleRate
         )
 
@@ -172,7 +176,8 @@ internal class SessionReplayFeatureTest {
             sdkCore = mockSdkCore,
             customEndpointUrl = fakeConfiguration.customEndpointUrl,
             privacy = fakeConfiguration.privacy,
-            rateBasedSampler = mockSampler
+                rateBasedSampler = mockSampler,
+                automaticStart = fakeConfiguration.automaticStart
         ) { _, _, _, _ -> mockRecorder }
 
         // When
@@ -517,6 +522,36 @@ internal class SessionReplayFeatureTest {
             verify(mockRecorder).resumeRecorders()
         }
         verifyNoMoreInteractions(mockRecorder)
+    }
+
+
+    @Test
+    fun `M not start recording W automatic start is false in configuration`() {
+        // When
+        whenever(mockSampler.sample()).thenReturn(true)
+        testedFeature.onInitialize(appContext.mockInstance)
+        val rumSessionUpdateBusMessage = mapOf(
+                SessionReplayFeature.SESSION_REPLAY_BUS_MESSAGE_TYPE_KEY to
+                        SessionReplayFeature.RUM_SESSION_RENEWED_BUS_MESSAGE,
+                SessionReplayFeature.RUM_KEEP_SESSION_BUS_MESSAGE_KEY to
+                        true,
+                SessionReplayFeature.RUM_SESSION_ID_BUS_MESSAGE_KEY to
+                        fakeSessionId
+        )
+
+        // When
+        testedFeature.onReceive(rumSessionUpdateBusMessage)
+
+        // Then
+        if (fakeConfiguration.automaticStart) {
+            inOrder(mockRecorder) {
+                verify(mockRecorder).registerCallbacks()
+                verify(mockRecorder).resumeRecorders()
+            }
+            verifyNoMoreInteractions(mockRecorder)
+        } else {
+            verify(mockRecorder, never()).resumeRecorders()
+        }
     }
 
     @Test

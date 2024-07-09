@@ -10,6 +10,7 @@ import android.os.Bundle
 import android.view.View
 import android.widget.CheckBox
 import androidx.fragment.app.Fragment
+import com.datadog.android.rum.GlobalRumMonitor
 import com.datadog.android.sample.R
 
 internal class RadioCheckBoxesFragment : Fragment(R.layout.fragment_radio_checkbox_components) {
@@ -43,5 +44,15 @@ internal class RadioCheckBoxesFragment : Fragment(R.layout.fragment_radio_checkb
                     materialDisabledNotChecked.isEnabled = isChecked
                 }
             }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        GlobalRumMonitor.get().startRecording()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        GlobalRumMonitor.get().stopSession()
     }
 }

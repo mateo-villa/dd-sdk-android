@@ -18,7 +18,8 @@ data class SessionReplayConfiguration internal constructor(
     internal val privacy: SessionReplayPrivacy,
     internal val customMappers: List<MapperTypeWrapper<*>>,
     internal val customOptionSelectorDetectors: List<OptionSelectorDetector>,
-    internal val sampleRate: Float
+    internal val sampleRate: Float,
+    internal val automaticStart: Boolean
 ) {
 
     /**
@@ -30,6 +31,7 @@ data class SessionReplayConfiguration internal constructor(
         private var customEndpointUrl: String? = null
         private var privacy = SessionReplayPrivacy.MASK
         private var extensionSupport: ExtensionSupport = NoOpExtensionSupport()
+        private var automaticStart: Boolean = true
 
         /**
          * Adds an extension support implementation. This is mostly used when you want to provide
@@ -47,6 +49,11 @@ data class SessionReplayConfiguration internal constructor(
          */
         fun useCustomEndpoint(endpoint: String): Builder {
             customEndpointUrl = endpoint
+            return this
+        }
+
+        fun setAutomaticStart(enable: Boolean): Builder {
+            automaticStart = enable
             return this
         }
 
@@ -71,7 +78,8 @@ data class SessionReplayConfiguration internal constructor(
                 privacy = privacy,
                 customMappers = customMappers(),
                 customOptionSelectorDetectors = extensionSupport.getOptionSelectorDetectors(),
-                sampleRate = sampleRate
+                    sampleRate = sampleRate,
+                    automaticStart = automaticStart
             )
         }
 

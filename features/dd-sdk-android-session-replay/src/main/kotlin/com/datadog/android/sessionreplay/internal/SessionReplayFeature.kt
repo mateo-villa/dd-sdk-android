@@ -43,7 +43,8 @@ internal class SessionReplayFeature(
     private val customEndpointUrl: String?,
     internal val privacy: SessionReplayPrivacy,
     private val rateBasedSampler: Sampler,
-    private val recorderProvider: RecorderProvider
+    private val automaticStart: Boolean,
+    private val recorderProvider: RecorderProvider,
 ) : StorageBackedFeature, FeatureEventReceiver {
 
     private val currentRumSessionId = AtomicReference<String>()
@@ -54,19 +55,22 @@ internal class SessionReplayFeature(
         privacy: SessionReplayPrivacy,
         customMappers: List<MapperTypeWrapper<*>>,
         customOptionSelectorDetectors: List<OptionSelectorDetector>,
-        sampleRate: Float
+        sampleRate: Float,
+        automaticStart: Boolean
     ) : this(
         sdkCore,
         customEndpointUrl,
         privacy,
         RateBasedSampler(sampleRate),
+            automaticStart = automaticStart,
         DefaultRecorderProvider(
             sdkCore,
             privacy,
             customMappers,
             customOptionSelectorDetectors
-        )
-    )
+        ),
+
+            )
 
     private lateinit var appContext: Context
     private var isRecording = AtomicBoolean(false)
@@ -181,7 +185,10 @@ internal class SessionReplayFeature(
     private fun checkStatusAndApplySample(sessionMetadata: Map<*, *>) {
         val keepSession = sessionMetadata[RUM_KEEP_SESSION_BUS_MESSAGE_KEY] as? Boolean
         val sessionId = sessionMetadata[RUM_SESSION_ID_BUS_MESSAGE_KEY] as? String
-
+        val startRecording = sessionMetadata[RUM_SESSION_REPLAY_UPDATE_RECORDING_KEY] == RUM_SESSION_REPLAY_UPDATE_RECORDING_START_VALUE
+        val stopRecording = sessionMetadata[RUM_SESSION_REPLAY_UPDATE_RECORDING_KEY] == RUM_SESSION_REPLAY_UPDATE_RECORDING_STOP_VALUE
+        val recordingStateChanged = startRecording || stopRecording
+        val isSampled = rateBasedSampler.sample()
         if (keepSession == null || sessionId == null) {
             sdkCore.internalLogger.log(
                 InternalLogger.Level.WARN,
@@ -191,7 +198,7 @@ internal class SessionReplayFeature(
             return
         }
 
-        if (currentRumSessionId.get() == sessionId) {
+        if (currentRumSessionId.get() == sessionId && !recordingStateChanged) {
             // we already handled this session
             return
         }
@@ -200,14 +207,19 @@ internal class SessionReplayFeature(
             return
         }
 
-        if (keepSession && rateBasedSampler.sample()) {
-            startRecording()
+        // Start recording in the condition that automaticStart is true or manual startRecording is called
+        if (keepSession && isSampled && !stopRecording) {
+            if (automaticStart || startRecording) {
+                startRecording()
+            }
         } else {
-            sdkCore.internalLogger.log(
-                InternalLogger.Level.INFO,
-                InternalLogger.Target.USER,
-                { SESSION_SAMPLED_OUT_MESSAGE }
-            )
+            if (!isSampled) {
+                sdkCore.internalLogger.log(
+                        InternalLogger.Level.INFO,
+                        InternalLogger.Target.USER,
+                        { SESSION_SAMPLED_OUT_MESSAGE }
+                )
+            }
             stopRecording()
         }
 
@@ -304,6 +316,9 @@ internal class SessionReplayFeature(
         const val SESSION_REPLAY_BUS_MESSAGE_TYPE_KEY = "type"
         const val RUM_SESSION_RENEWED_BUS_MESSAGE = "rum_session_renewed"
         const val RUM_KEEP_SESSION_BUS_MESSAGE_KEY = "keepSession"
+        internal const val RUM_SESSION_REPLAY_UPDATE_RECORDING_KEY = "sr_update_recording"
+        internal const val RUM_SESSION_REPLAY_UPDATE_RECORDING_START_VALUE = "start"
+        internal const val RUM_SESSION_REPLAY_UPDATE_RECORDING_STOP_VALUE = "stop"
         const val RUM_SESSION_ID_BUS_MESSAGE_KEY = "sessionId"
         internal const val SESSION_REPLAY_SAMPLE_RATE_KEY = "session_replay_sample_rate"
         internal const val SESSION_REPLAY_PRIVACY_KEY = "session_replay_privacy"

@@ -35,7 +35,8 @@ object SessionReplay {
             privacy = sessionReplayConfiguration.privacy,
             customMappers = sessionReplayConfiguration.customMappers,
             customOptionSelectorDetectors = sessionReplayConfiguration.customOptionSelectorDetectors,
-            sampleRate = sessionReplayConfiguration.sampleRate
+                sampleRate = sessionReplayConfiguration.sampleRate,
+                automaticStart = sessionReplayConfiguration.automaticStart
         )
 
         sdkCore.registerFeature(sessionReplayFeature)

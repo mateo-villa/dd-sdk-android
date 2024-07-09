@@ -323,6 +323,11 @@ interface RumMonitor {
      */
     fun stopSession()
 
+
+    fun startRecording()
+
+    fun stopRecording()
+
     /**
      * Utility setting to inspect the active RUM View.
      * If set, a debugging outline will be displayed on top of the application, describing the name

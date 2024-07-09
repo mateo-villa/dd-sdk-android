@@ -173,6 +173,11 @@ internal class RumSessionScope(
         val isBackgroundEvent = event.javaClass in RumViewManagerScope.validBackgroundEventTypes
         val isSdkInitInForeground = event is RumRawEvent.SdkInit && event.isAppInForeground
         val isSdkInitInBackground = event is RumRawEvent.SdkInit && !event.isAppInForeground
+        val recordingEnableCommand: Boolean? = when (event) {
+            is RumRawEvent.StartRecording -> true
+            is RumRawEvent.StopRecording -> false
+            else -> null
+        }
 
         // When the session is expired, time-out or stopSession API is called, session ended metric should be sent
         if (isExpired || isTimedOut || isActive.not()) {
@@ -202,7 +207,7 @@ internal class RumSessionScope(
             renewSession(nanoTime, StartReason.MAX_DURATION)
         }
 
-        updateSessionStateForSessionReplay(sessionState, sessionId)
+        updateSessionStateForSessionReplay(sessionState, sessionId, recordingEnableCommand)
     }
 
     private fun renewSession(nanoTime: Long, reason: StartReason) {
@@ -222,14 +227,20 @@ internal class RumSessionScope(
         sessionListener?.onSessionStarted(sessionId, !keepSession)
     }
 
-    private fun updateSessionStateForSessionReplay(state: State, sessionId: String) {
+    private fun updateSessionStateForSessionReplay(state: State, sessionId: String, recordingEnableCommand: Boolean?) {
         val keepSession = (state == State.TRACKED)
         sdkCore.getFeature(Feature.SESSION_REPLAY_FEATURE_NAME)?.sendEvent(
-            mapOf(
-                SESSION_REPLAY_BUS_MESSAGE_TYPE_KEY to RUM_SESSION_RENEWED_BUS_MESSAGE,
-                RUM_KEEP_SESSION_BUS_MESSAGE_KEY to keepSession,
-                RUM_SESSION_ID_BUS_MESSAGE_KEY to sessionId
-            )
+                buildMap<String, Any> {
+                    put(SESSION_REPLAY_BUS_MESSAGE_TYPE_KEY, RUM_SESSION_RENEWED_BUS_MESSAGE)
+                    put(RUM_KEEP_SESSION_BUS_MESSAGE_KEY, keepSession)
+                    put(RUM_SESSION_ID_BUS_MESSAGE_KEY, sessionId)
+                    recordingEnableCommand?.let {
+                        put(RUM_SESSION_REPLAY_UPDATE_RECORDING_KEY,
+                                if (it) RUM_SESSION_REPLAY_UPDATE_RECORDING_START_VALUE
+                                else RUM_SESSION_REPLAY_UPDATE_RECORDING_STOP_VALUE
+                        )
+                    }
+                }
         )
     }
 
@@ -239,6 +250,9 @@ internal class RumSessionScope(
 
         internal const val SESSION_REPLAY_BUS_MESSAGE_TYPE_KEY = "type"
         internal const val RUM_SESSION_RENEWED_BUS_MESSAGE = "rum_session_renewed"
+        internal const val RUM_SESSION_REPLAY_UPDATE_RECORDING_KEY = "sr_update_recording"
+        internal const val RUM_SESSION_REPLAY_UPDATE_RECORDING_START_VALUE = "start"
+        internal const val RUM_SESSION_REPLAY_UPDATE_RECORDING_STOP_VALUE = "stop"
         internal const val RUM_KEEP_SESSION_BUS_MESSAGE_KEY = "keepSession"
         internal const val RUM_SESSION_ID_BUS_MESSAGE_KEY = "sessionId"
         internal val DEFAULT_SESSION_INACTIVITY_NS = TimeUnit.MINUTES.toNanos(15)

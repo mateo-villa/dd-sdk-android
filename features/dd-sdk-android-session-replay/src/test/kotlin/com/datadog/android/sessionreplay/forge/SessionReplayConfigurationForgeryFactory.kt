@@ -19,7 +19,8 @@ class SessionReplayConfigurationForgeryFactory : ForgeryFactory<SessionReplayCon
             privacy = forge.aValueFrom(SessionReplayPrivacy::class.java),
             customMappers = forge.aList { mock() },
             customOptionSelectorDetectors = forge.aList { mock() },
-            sampleRate = forge.aFloat(min = 0f, max = 100f)
+                sampleRate = forge.aFloat(min = 0f, max = 100f),
+                automaticStart = forge.aBool()
         )
     }
 }

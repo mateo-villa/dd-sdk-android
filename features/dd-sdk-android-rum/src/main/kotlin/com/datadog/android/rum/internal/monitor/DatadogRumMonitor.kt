@@ -376,6 +376,18 @@ internal class DatadogRumMonitor(
         )
     }
 
+    override fun startRecording() {
+        handleEvent(
+                RumRawEvent.StartRecording()
+        )
+    }
+
+    override fun stopRecording() {
+        handleEvent(
+                RumRawEvent.StopRecording()
+        )
+    }
+
     // endregion
 
     // region RumMonitor/Attributes
