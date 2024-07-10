@@ -206,6 +206,16 @@ internal sealed class RumRawEvent {
             override val eventTime: Time = Time()
     ) : RumRawEvent()
 
+    internal data class HideView(
+            val viewId: String,
+            override val eventTime: Time = Time()
+    ) : RumRawEvent()
+
+    internal data class ShowView(
+            val viewId: String,
+            override val eventTime: Time = Time()
+    ) : RumRawEvent()
+
 
     internal data class UpdatePerformanceMetric(
         val metric: RumPerformanceMetric,

@@ -11,9 +11,11 @@ import android.view.ViewGroup
 import androidx.annotation.UiThread
 import com.datadog.android.api.InternalLogger
 import com.datadog.android.api.feature.measureMethodCallPerf
+import com.datadog.android.core.internal.HiddenViewStorage
 import com.datadog.android.core.metrics.MethodCallSamplingRate
 import com.datadog.android.sessionreplay.MapperTypeWrapper
 import com.datadog.android.sessionreplay.internal.async.RecordedDataQueueRefs
+import com.datadog.android.sessionreplay.internal.recorder.mapper.HiddenViewMapper
 import com.datadog.android.sessionreplay.internal.recorder.mapper.QueueStatusCallback
 import com.datadog.android.sessionreplay.model.MobileSegment
 import com.datadog.android.sessionreplay.recorder.MappingContext
@@ -25,6 +27,8 @@ import com.datadog.android.sessionreplay.utils.NoOpAsyncJobStatusCallback
 internal class TreeViewTraversal(
     private val mappers: List<MapperTypeWrapper<*>>,
     private val defaultViewMapper: WireframeMapper<View>,
+    private val hiddenViewMapper: HiddenViewMapper,
+    private val hiddenViews: List<Class<out View>>,
     private val decorViewMapper: WireframeMapper<View>,
     private val viewUtilsInternal: ViewUtilsInternal,
     private val internalLogger: InternalLogger
@@ -47,6 +51,14 @@ internal class TreeViewTraversal(
 
         val noOpCallback = NoOpAsyncJobStatusCallback()
         val jobStatusCallback: AsyncJobStatusCallback
+
+        if (HiddenViewStorage.hiddenViewIds.contains(view.id)
+                || hiddenViews.contains(view.javaClass)) {
+            val resolvedWireframes =
+                    hiddenViewMapper.map(view, mappingContext, noOpCallback, internalLogger)
+            return TraversedTreeView(resolvedWireframes, TraversalStrategy.STOP_AND_RETURN_NODE)
+        }
+
 
         // try to resolve from the exhaustive type mappers
         var mapper = findMapperForView(view)
@@ -84,10 +96,11 @@ internal class TreeViewTraversal(
             )
         }
 
+
         val resolvedWireframes = internalLogger.measureMethodCallPerf(
-            javaClass,
-            "$METHOD_CALL_MAP_PREFIX ${mapper.javaClass.simpleName}",
-            MethodCallSamplingRate.RARE.rate
+                javaClass,
+                "$METHOD_CALL_MAP_PREFIX ${mapper.javaClass.simpleName}",
+                MethodCallSamplingRate.RARE.rate
         ) {
             mapper.map(view, mappingContext, jobStatusCallback, internalLogger)
         }

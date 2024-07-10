@@ -19,17 +19,11 @@ public final class com/datadog/android/sessionreplay/SessionReplay {
 	public static final fun enable (Lcom/datadog/android/sessionreplay/SessionReplayConfiguration;)V
 	public static final fun enable (Lcom/datadog/android/sessionreplay/SessionReplayConfiguration;Lcom/datadog/android/api/SdkCore;)V
 	public static synthetic fun enable$default (Lcom/datadog/android/sessionreplay/SessionReplayConfiguration;Lcom/datadog/android/api/SdkCore;ILjava/lang/Object;)V
-	public static final fun startRecording ()V
-	public static final fun startRecording (Lcom/datadog/android/api/SdkCore;)V
-	public static synthetic fun startRecording$default (Lcom/datadog/android/api/SdkCore;ILjava/lang/Object;)V
-	public static final fun stopRecording ()V
-	public static final fun stopRecording (Lcom/datadog/android/api/SdkCore;)V
-	public static synthetic fun stopRecording$default (Lcom/datadog/android/api/SdkCore;ILjava/lang/Object;)V
 }
 
 public final class com/datadog/android/sessionreplay/SessionReplayConfiguration {
-	public final fun copy (Ljava/lang/String;Lcom/datadog/android/sessionreplay/SessionReplayPrivacy;Ljava/util/List;Ljava/util/List;FZ)Lcom/datadog/android/sessionreplay/SessionReplayConfiguration;
-	public static synthetic fun copy$default (Lcom/datadog/android/sessionreplay/SessionReplayConfiguration;Ljava/lang/String;Lcom/datadog/android/sessionreplay/SessionReplayPrivacy;Ljava/util/List;Ljava/util/List;FZILjava/lang/Object;)Lcom/datadog/android/sessionreplay/SessionReplayConfiguration;
+	public final fun copy (Ljava/lang/String;Lcom/datadog/android/sessionreplay/SessionReplayPrivacy;Ljava/util/List;Ljava/util/List;FZLjava/util/List;)Lcom/datadog/android/sessionreplay/SessionReplayConfiguration;
+	public static synthetic fun copy$default (Lcom/datadog/android/sessionreplay/SessionReplayConfiguration;Ljava/lang/String;Lcom/datadog/android/sessionreplay/SessionReplayPrivacy;Ljava/util/List;Ljava/util/List;FZLjava/util/List;ILjava/lang/Object;)Lcom/datadog/android/sessionreplay/SessionReplayConfiguration;
 	public fun equals (Ljava/lang/Object;)Z
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
@@ -40,6 +34,7 @@ public final class com/datadog/android/sessionreplay/SessionReplayConfiguration$
 	public final fun addExtensionSupport (Lcom/datadog/android/sessionreplay/ExtensionSupport;)Lcom/datadog/android/sessionreplay/SessionReplayConfiguration$Builder;
 	public final fun build ()Lcom/datadog/android/sessionreplay/SessionReplayConfiguration;
 	public final fun setAutomaticStart (Z)Lcom/datadog/android/sessionreplay/SessionReplayConfiguration$Builder;
+	public final fun setHiddenViews (Ljava/util/List;)Lcom/datadog/android/sessionreplay/SessionReplayConfiguration$Builder;
 	public final fun setPrivacy (Lcom/datadog/android/sessionreplay/SessionReplayPrivacy;)Lcom/datadog/android/sessionreplay/SessionReplayConfiguration$Builder;
 	public final fun useCustomEndpoint (Ljava/lang/String;)Lcom/datadog/android/sessionreplay/SessionReplayConfiguration$Builder;
 }
@@ -50,6 +45,11 @@ public final class com/datadog/android/sessionreplay/SessionReplayPrivacy : java
 	public static final field MASK_USER_INPUT Lcom/datadog/android/sessionreplay/SessionReplayPrivacy;
 	public static fun valueOf (Ljava/lang/String;)Lcom/datadog/android/sessionreplay/SessionReplayPrivacy;
 	public static fun values ()[Lcom/datadog/android/sessionreplay/SessionReplayPrivacy;
+}
+
+public final class com/datadog/android/sessionreplay/internal/recorder/mapper/HiddenViewMapper : com/datadog/android/sessionreplay/recorder/mapper/BaseWireframeMapper {
+	public fun <init> (Lcom/datadog/android/sessionreplay/utils/ViewIdentifierResolver;Lcom/datadog/android/sessionreplay/utils/ColorStringFormatter;Lcom/datadog/android/sessionreplay/utils/ViewBoundsResolver;Lcom/datadog/android/sessionreplay/utils/DrawableToColorMapper;)V
+	public fun map (Landroid/view/View;Lcom/datadog/android/sessionreplay/recorder/MappingContext;Lcom/datadog/android/sessionreplay/utils/AsyncJobStatusCallback;Lcom/datadog/android/api/InternalLogger;)Ljava/util/List;
 }
 
 public final class com/datadog/android/sessionreplay/model/MobileSegment {

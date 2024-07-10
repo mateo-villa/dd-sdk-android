@@ -19,6 +19,8 @@ internal class RadioCheckBoxesFragment : Fragment(R.layout.fragment_radio_checkb
         super.onViewCreated(view, savedInstanceState)
         val defaultDisabledChecked = view.findViewById<CheckBox>(R.id.checkbox_disabled_checked)
         val defaultDisabledNotChecked = view.findViewById<CheckBox>(R.id.checkbox_disabled_not_checked)
+        GlobalRumMonitor.get().hide(defaultDisabledChecked)
+        GlobalRumMonitor.get().hide(defaultDisabledNotChecked)
         view.findViewById<CheckBox>(R.id.default_checkbox).apply {
             setOnCheckedChangeListener { _, isChecked ->
                 defaultDisabledChecked.isEnabled = isChecked

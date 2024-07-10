@@ -8,11 +8,13 @@ package com.datadog.android.rum.internal.monitor
 
 import android.app.ActivityManager
 import android.os.Handler
+import android.view.View
 import com.datadog.android.api.InternalLogger
 import com.datadog.android.api.feature.Feature
 import com.datadog.android.api.storage.DataWriter
 import com.datadog.android.core.InternalSdkCore
 import com.datadog.android.core.feature.event.ThreadDump
+import com.datadog.android.core.internal.HiddenViewStorage
 import com.datadog.android.core.internal.net.FirstPartyHostHeaderTypeResolver
 import com.datadog.android.core.internal.utils.loggableStackTrace
 import com.datadog.android.core.internal.utils.submitSafe
@@ -386,6 +388,14 @@ internal class DatadogRumMonitor(
         handleEvent(
                 RumRawEvent.StopRecording()
         )
+    }
+
+    override fun hide(view: View) {
+        HiddenViewStorage.hidde(view)
+    }
+
+    override fun show(view: View) {
+        HiddenViewStorage.show(view)
     }
 
     // endregion

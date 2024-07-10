@@ -8,6 +8,7 @@ package com.datadog.android.sessionreplay.internal
 
 import android.app.Application
 import android.os.Build
+import android.view.View
 import android.webkit.WebView
 import android.widget.Button
 import android.widget.CheckBox
@@ -58,6 +59,7 @@ internal class DefaultRecorderProvider(
     private val sdkCore: FeatureSdkCore,
     private val privacy: SessionReplayPrivacy,
     private val customMappers: List<MapperTypeWrapper<*>>,
+    private val hiddenViews: List<Class<out View>>,
     private val customOptionSelectorDetectors: List<OptionSelectorDetector>
 ) : RecorderProvider {
 
@@ -72,6 +74,7 @@ internal class DefaultRecorderProvider(
             resourceDataStoreManager = resourceDataStoreManager,
             resourcesWriter = resourceWriter,
             rumContextProvider = SessionReplayRumContextProvider(sdkCore),
+                hiddenViews = hiddenViews,
             privacy = privacy,
             recordWriter = recordWriter,
             timeProvider = SessionReplayTimeProvider(sdkCore),

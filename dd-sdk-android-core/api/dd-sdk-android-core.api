@@ -684,6 +684,13 @@ public final class com/datadog/android/core/feature/event/ThreadDump {
 	public fun toString ()Ljava/lang/String;
 }
 
+public final class com/datadog/android/core/internal/HiddenViewStorage {
+	public static final field INSTANCE Lcom/datadog/android/core/internal/HiddenViewStorage;
+	public final fun getHiddenViewIds ()Ljava/util/Set;
+	public final fun hidde (Landroid/view/View;)V
+	public final fun show (Landroid/view/View;)V
+}
+
 public final class com/datadog/android/core/internal/net/DefaultFirstPartyHostHeaderTypeResolver : com/datadog/android/core/internal/net/FirstPartyHostHeaderTypeResolver {
 	public fun <init> (Ljava/util/Map;)V
 	public fun getAllHeaderTypes ()Ljava/util/Set;

@@ -7,6 +7,7 @@
 package com.datadog.android.rum
 
 import android.app.Activity
+import android.view.View
 import androidx.fragment.app.Fragment
 import com.datadog.tools.annotation.NoOpImplementation
 
@@ -327,6 +328,10 @@ interface RumMonitor {
     fun startRecording()
 
     fun stopRecording()
+
+    fun hide(view: View)
+
+    fun show(view: View)
 
     /**
      * Utility setting to inspect the active RUM View.

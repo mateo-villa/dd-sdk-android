@@ -6,6 +6,7 @@
 
 package com.datadog.android.sessionreplay
 
+import android.view.View
 import androidx.annotation.FloatRange
 import com.datadog.android.sessionreplay.internal.NoOpExtensionSupport
 import com.datadog.android.sessionreplay.recorder.OptionSelectorDetector
@@ -19,7 +20,8 @@ data class SessionReplayConfiguration internal constructor(
     internal val customMappers: List<MapperTypeWrapper<*>>,
     internal val customOptionSelectorDetectors: List<OptionSelectorDetector>,
     internal val sampleRate: Float,
-    internal val automaticStart: Boolean
+    internal val automaticStart: Boolean,
+    internal val hiddenViews: List<Class<out View>>
 ) {
 
     /**
@@ -32,6 +34,7 @@ data class SessionReplayConfiguration internal constructor(
         private var privacy = SessionReplayPrivacy.MASK
         private var extensionSupport: ExtensionSupport = NoOpExtensionSupport()
         private var automaticStart: Boolean = true
+        private var hiddenViews: List<Class<out View>> = emptyList()
 
         /**
          * Adds an extension support implementation. This is mostly used when you want to provide
@@ -69,6 +72,11 @@ data class SessionReplayConfiguration internal constructor(
             return this
         }
 
+        fun setHiddenViews(viewClassList: List<Class<out View>>): Builder {
+            this.hiddenViews = viewClassList
+            return this
+        }
+
         /**
          * Builds a [SessionReplayConfiguration] based on the current state of this Builder.
          */
@@ -77,6 +85,7 @@ data class SessionReplayConfiguration internal constructor(
                 customEndpointUrl = customEndpointUrl,
                 privacy = privacy,
                 customMappers = customMappers(),
+                    hiddenViews = hiddenViews,
                 customOptionSelectorDetectors = extensionSupport.getOptionSelectorDetectors(),
                     sampleRate = sampleRate,
                     automaticStart = automaticStart

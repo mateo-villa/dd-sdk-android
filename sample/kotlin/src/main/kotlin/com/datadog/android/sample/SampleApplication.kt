@@ -10,6 +10,7 @@ import android.app.Application
 import android.content.Context
 import android.os.Build
 import android.util.Log
+import androidx.appcompat.widget.AppCompatRadioButton
 import androidx.lifecycle.ViewModelProvider
 import com.datadog.android.Datadog
 import com.datadog.android.DatadogSite
@@ -55,6 +56,7 @@ import com.datadog.android.trace.TraceConfiguration
 import com.datadog.android.trace.opentelemetry.OtelTracerProvider
 import com.datadog.android.vendor.sample.LocalServer
 import com.facebook.stetho.Stetho
+import com.google.android.material.radiobutton.MaterialRadioButton
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
@@ -157,6 +159,10 @@ class SampleApplication : Application() {
             }
                 .setAutomaticStart(enable = false)
             .setPrivacy(SessionReplayPrivacy.MASK_USER_INPUT)
+                .setHiddenViews(listOf(
+                        AppCompatRadioButton::class.java,
+                        MaterialRadioButton::class.java
+                ))
             .addExtensionSupport(MaterialExtensionSupport())
             .build()
         SessionReplay.enable(sessionReplayConfig)

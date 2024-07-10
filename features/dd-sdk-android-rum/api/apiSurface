@@ -113,6 +113,8 @@ interface com.datadog.android.rum.RumMonitor
   fun stopSession()
   fun startRecording()
   fun stopRecording()
+  fun hide(android.view.View)
+  fun show(android.view.View)
   var debug: Boolean
   fun _getInternal(): _RumInternalProxy?
 enum com.datadog.android.rum.RumPerformanceMetric

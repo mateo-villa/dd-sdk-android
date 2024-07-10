@@ -8,6 +8,7 @@ package com.datadog.android.sessionreplay.internal
 
 import android.app.Application
 import android.content.Context
+import android.view.View
 import com.datadog.android.api.InternalLogger
 import com.datadog.android.api.SdkCore
 import com.datadog.android.api.feature.Feature
@@ -45,6 +46,7 @@ internal class SessionReplayFeature(
     private val rateBasedSampler: Sampler,
     private val automaticStart: Boolean,
     private val recorderProvider: RecorderProvider,
+    private val hiddenViews: List<Class<out View>>
 ) : StorageBackedFeature, FeatureEventReceiver {
 
     private val currentRumSessionId = AtomicReference<String>()
@@ -54,6 +56,7 @@ internal class SessionReplayFeature(
         customEndpointUrl: String?,
         privacy: SessionReplayPrivacy,
         customMappers: List<MapperTypeWrapper<*>>,
+        hiddenViews: List<Class<out View>>,
         customOptionSelectorDetectors: List<OptionSelectorDetector>,
         sampleRate: Float,
         automaticStart: Boolean
@@ -67,9 +70,11 @@ internal class SessionReplayFeature(
             sdkCore,
             privacy,
             customMappers,
-            customOptionSelectorDetectors
-        ),
+                hiddenViews,
+                customOptionSelectorDetectors,
 
+                ),
+            hiddenViews
             )
 
     private lateinit var appContext: Context

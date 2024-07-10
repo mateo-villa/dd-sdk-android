@@ -243,6 +243,10 @@ sealed class com.datadog.android.core.feature.event.JvmCrash
     constructor(Throwable, String, List<ThreadDump>)
 data class com.datadog.android.core.feature.event.ThreadDump
   constructor(String, String, String, Boolean)
+object com.datadog.android.core.internal.HiddenViewStorage
+  val hiddenViewIds: MutableSet<Int>
+  fun hidde(android.view.View)
+  fun show(android.view.View)
 class com.datadog.android.core.internal.net.DefaultFirstPartyHostHeaderTypeResolver : FirstPartyHostHeaderTypeResolver
   constructor(Map<String, Set<com.datadog.android.trace.TracingHeaderType>>)
   override fun isFirstPartyUrl(okhttp3.HttpUrl): Boolean

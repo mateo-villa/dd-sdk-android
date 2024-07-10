@@ -9,6 +9,7 @@ package com.datadog.android.sessionreplay.internal.recorder
 import android.app.Application
 import android.os.Handler
 import android.os.Looper
+import android.view.View
 import android.view.Window
 import androidx.annotation.MainThread
 import androidx.annotation.VisibleForTesting
@@ -24,6 +25,7 @@ import com.datadog.android.sessionreplay.internal.processor.RecordedDataProcesso
 import com.datadog.android.sessionreplay.internal.processor.RumContextDataHandler
 import com.datadog.android.sessionreplay.internal.recorder.callback.OnWindowRefreshedCallback
 import com.datadog.android.sessionreplay.internal.recorder.mapper.DecorViewMapper
+import com.datadog.android.sessionreplay.internal.recorder.mapper.HiddenViewMapper
 import com.datadog.android.sessionreplay.internal.recorder.mapper.ViewWireframeMapper
 import com.datadog.android.sessionreplay.internal.recorder.resources.BitmapCachesManager
 import com.datadog.android.sessionreplay.internal.recorder.resources.BitmapPool
@@ -77,6 +79,7 @@ internal class SessionReplayRecorder : OnWindowRefreshedCallback, Recorder {
         recordWriter: RecordWriter,
         timeProvider: TimeProvider,
         mappers: List<MapperTypeWrapper<*>> = emptyList(),
+        hiddenViews: List<Class<out View>>,
         customOptionSelectorDetectors: List<OptionSelectorDetector> = emptyList(),
         windowInspector: WindowInspector = WindowInspector,
         sdkCore: FeatureSdkCore,
@@ -162,7 +165,9 @@ internal class SessionReplayRecorder : OnWindowRefreshedCallback, Recorder {
                     ),
                     TreeViewTraversal(
                         mappers = mappers,
-                        defaultViewMapper = defaultVWM,
+                            hiddenViewMapper = HiddenViewMapper(viewIdentifierResolver, colorStringFormatter, viewBoundsResolver, drawableToColorMapper),
+                            hiddenViews = hiddenViews,
+                            defaultViewMapper = defaultVWM,
                         decorViewMapper = DecorViewMapper(defaultVWM, viewIdentifierResolver),
                         viewUtilsInternal = ViewUtilsInternal(),
                         internalLogger = internalLogger
