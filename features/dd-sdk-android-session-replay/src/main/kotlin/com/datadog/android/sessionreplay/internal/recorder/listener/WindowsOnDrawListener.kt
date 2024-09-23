@@ -11,7 +11,6 @@ import android.view.ViewTreeObserver
 import androidx.annotation.MainThread
 import androidx.annotation.UiThread
 import com.datadog.android.api.InternalLogger
-import com.datadog.android.api.feature.measureMethodCallPerf
 import com.datadog.android.sessionreplay.ImagePrivacy
 import com.datadog.android.sessionreplay.TextAndInputPrivacy
 import com.datadog.android.sessionreplay.internal.async.RecordedDataQueueHandler
@@ -22,6 +21,7 @@ import com.datadog.android.sessionreplay.internal.recorder.withinSRBenchmarkSpan
 import com.datadog.android.sessionreplay.internal.utils.MiscUtils
 import java.lang.ref.WeakReference
 
+@Suppress("UnusedPrivateProperty")
 internal class WindowsOnDrawListener(
     zOrderedDecorViews: List<View>,
     private val recordedDataQueueHandler: RecordedDataQueueHandler,
@@ -53,23 +53,17 @@ internal class WindowsOnDrawListener(
             val systemInformation = miscUtils.resolveSystemInformation(context)
             val item = recordedDataQueueHandler.addSnapshotItem(systemInformation) ?: return
 
-            val nodes = internalLogger.measureMethodCallPerf(
-                METHOD_CALL_CALLER_CLASS,
-                METHOD_CALL_CAPTURE_RECORD,
-                methodCallSamplingRate
-            ) {
-                withinSRBenchmarkSpan(BENCHMARK_SPAN_SNAPSHOT_PRODUCER, isContainer = true) {
-                    val recordedDataQueueRefs = RecordedDataQueueRefs(recordedDataQueueHandler)
-                    recordedDataQueueRefs.recordedDataQueueItem = item
-                    rootViews.mapNotNull {
-                        snapshotProducer.produce(
-                            rootView = it,
-                            systemInformation = systemInformation,
-                            textAndInputPrivacy = textAndInputPrivacy,
-                            imagePrivacy = imagePrivacy,
-                            recordedDataQueueRefs = recordedDataQueueRefs
-                        )
-                    }
+            val nodes = withinSRBenchmarkSpan(BENCHMARK_SPAN_SNAPSHOT_PRODUCER, isContainer = true) {
+                val recordedDataQueueRefs = RecordedDataQueueRefs(recordedDataQueueHandler)
+                recordedDataQueueRefs.recordedDataQueueItem = item
+                rootViews.mapNotNull {
+                    snapshotProducer.produce(
+                        rootView = it,
+                        systemInformation = systemInformation,
+                        textAndInputPrivacy = textAndInputPrivacy,
+                        imagePrivacy = imagePrivacy,
+                        recordedDataQueueRefs = recordedDataQueueRefs
+                    )
                 }
             }
 

@@ -13,7 +13,6 @@ import android.content.res.Resources.Theme
 import android.view.View
 import com.datadog.android.api.InternalLogger
 import com.datadog.android.core.metrics.PerformanceMetric
-import com.datadog.android.core.metrics.TelemetryMetricType
 import com.datadog.android.sessionreplay.ImagePrivacy
 import com.datadog.android.sessionreplay.TextAndInputPrivacy
 import com.datadog.android.sessionreplay.forge.ForgeConfigurator
@@ -41,7 +40,6 @@ import org.mockito.junit.jupiter.MockitoExtension
 import org.mockito.junit.jupiter.MockitoSettings
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
-import org.mockito.kotlin.doAnswer
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
@@ -245,60 +243,6 @@ internal class WindowsOnDrawListenerTest {
 
         // Then
         verify(mockRecordedDataQueueHandler, never()).tryToConsumeItems()
-    }
-
-    @Test
-    fun `M call methodCall telemetry with true W onDraw() { has nodes }`() {
-        // Given
-        whenever(
-            mockInternalLogger.startPerformanceMeasure(
-                "com.datadog.android.sessionreplay.internal.recorder.listener.WindowsOnDrawListener",
-                TelemetryMetricType.MethodCalled,
-                fakeMethodCallSamplingRate,
-                "Capture Record"
-            )
-        ).thenReturn(mockPerformanceMetric)
-        whenever(mockDebouncer.debounce(any())) doAnswer {
-            (it.arguments[0] as Runnable).run()
-        }
-        whenever(mockRecordedDataQueueHandler.addSnapshotItem(any<SystemInformation>()))
-            .thenReturn(fakeSnapshotQueueItem)
-
-        fakeSnapshotQueueItem.pendingJobs.set(0)
-
-        // When
-        testedListener.onDraw()
-
-        // Then
-        val booleanCaptor = argumentCaptor<Boolean>()
-        verify(mockPerformanceMetric).stopAndSend(booleanCaptor.capture())
-        assertThat(booleanCaptor.firstValue).isTrue()
-    }
-
-    @Test
-    fun `M send methodCall telemetry with false W onDraw() { no nodes }`() {
-        // Given
-        whenever(
-            mockInternalLogger.startPerformanceMeasure(
-                "com.datadog.android.sessionreplay.internal.recorder.listener.WindowsOnDrawListener",
-                TelemetryMetricType.MethodCalled,
-                fakeMethodCallSamplingRate,
-                "Capture Record"
-            )
-        ).thenReturn(mockPerformanceMetric)
-        whenever(mockSnapshotProducer.produce(any(), any(), any(), any(), any())).thenReturn(null)
-        whenever(mockRecordedDataQueueHandler.addSnapshotItem(any<SystemInformation>()))
-            .thenReturn(fakeSnapshotQueueItem)
-        fakeSnapshotQueueItem.pendingJobs.set(0)
-
-        // When
-        testedListener.onDraw()
-
-        // Then
-        argumentCaptor<Boolean> {
-            verify(mockPerformanceMetric).stopAndSend(capture())
-            assertThat(firstValue).isFalse()
-        }
     }
 
     // region Internal
