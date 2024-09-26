@@ -104,129 +104,9 @@ create_key:
       - pubkeys
 
 
-# STATIC ANALYSIS
-
-static-analysis:
-  stage: analysis
-  variables:
-    DETEKT_PUBLIC_API: "true"
-    DETEKT_GENERATE_CLASSPATH_BUILD_TASK: "printSdkDebugRuntimeClasspath"
-    DETEKT_CLASSPATH_FILE_PATH: "sdk_classpath"
-    FLAVORED_ANDROID_LINT: ":tools:lint:lint"
-  trigger:
-    include: "https://gitlab-templates.ddbuild.io/mobile/v34714656-060be019/static-analysis.yml"
-    strategy: depend
-
-analysis:detekt-custom:
-  tags:
-    - "arch:amd64"
-  image: $CI_IMAGE_DOCKER
-  stage: analysis
-  timeout: 1h
-  script:
-    - ./gradlew assembleLibrariesRelease --stacktrace
-    - ./gradlew unzipAarForDetekt --stacktrace
-    - ./gradlew :tools:detekt:jar --stacktrace
-    - ./gradlew printDetektClasspath --stacktrace
-    - curl -sSLO https://github.com/detekt/detekt/releases/download/v1.23.4/detekt-cli-1.23.4-all.jar
-    - ./gradlew :dd-sdk-android-core:customDetektRules
-    - ./gradlew :dd-sdk-android-internal:customDetektRules
-    - ./gradlew :features:dd-sdk-android-logs:customDetektRules
-    - ./gradlew :features:dd-sdk-android-ndk:customDetektRules
-    - ./gradlew :features:dd-sdk-android-rum:customDetektRules
-    - ./gradlew :features:dd-sdk-android-session-replay:customDetektRules
-    - ./gradlew :features:dd-sdk-android-session-replay-material:customDetektRules
-    - ./gradlew :features:dd-sdk-android-trace:customDetektRules
-    - ./gradlew :features:dd-sdk-android-trace-otel:customDetektRules
-    - ./gradlew :features:dd-sdk-android-webview:customDetektRules
-    - ./gradlew :integrations:dd-sdk-android-coil:customDetektRules
-    - ./gradlew :integrations:dd-sdk-android-compose:customDetektRules
-    - ./gradlew :integrations:dd-sdk-android-fresco:customDetektRules
-    - ./gradlew :integrations:dd-sdk-android-glide:customDetektRules
-    - ./gradlew :integrations:dd-sdk-android-okhttp:customDetektRules
-    - ./gradlew :integrations:dd-sdk-android-okhttp-otel:customDetektRules
-    - ./gradlew :integrations:dd-sdk-android-rum-coroutines:customDetektRules
-    - ./gradlew :integrations:dd-sdk-android-rx:customDetektRules
-    - ./gradlew :integrations:dd-sdk-android-sqldelight:customDetektRules
-    - ./gradlew :integrations:dd-sdk-android-timber:customDetektRules
-    - ./gradlew :integrations:dd-sdk-android-trace-coroutines:customDetektRules
-    - ./gradlew :integrations:dd-sdk-android-tv:customDetektRules
-
 
 # TODO RUM-1622 cleanup this section
 # TESTS
-
-test:debug:
-  tags: [ "arch:amd64" ]
-  image: $CI_IMAGE_DOCKER
-  stage: test
-  timeout: 1h
-  cache:
-    key: $CI_COMMIT_REF_SLUG
-    paths:
-      - cache/caches/
-      - cache/notifications/
-    policy: pull
-  script:
-    - rm -rf ~/.gradle/daemon/
-    - export DD_AGENT_HOST="$BUILDENV_HOST_IP"
-    - GRADLE_OPTS="-Xmx3072m" DD_TAGS="test.configuration.variant:debug" ./gradlew :dd-sdk-android-core:testDebugUnitTest --no-daemon --build-cache --gradle-user-home cache/ -Dorg.gradle.jvmargs=-javaagent:$DD_TRACER_FOLDER/dd-java-agent.jar=$DD_COMMON_AGENT_CONFIG -Dorg.gradle.jvmargs=-XX:+HeapDumpOnOutOfMemoryError
-    - GRADLE_OPTS="-Xmx3072m" DD_TAGS="test.configuration.variant:debug" ./gradlew :dd-sdk-android-internal:testDebugUnitTest --no-daemon --build-cache --gradle-user-home cache/ -Dorg.gradle.jvmargs=-javaagent:$DD_TRACER_FOLDER/dd-java-agent.jar=$DD_COMMON_AGENT_CONFIG -Dorg.gradle.jvmargs=-XX:+HeapDumpOnOutOfMemoryError
-    - GRADLE_OPTS="-Xmx3072m" DD_TAGS="test.configuration.variant:debug" ./gradlew :unitTestDebugFeatures --no-daemon --build-cache --gradle-user-home cache/ -Dorg.gradle.jvmargs=-javaagent:$DD_TRACER_FOLDER/dd-java-agent.jar=$DD_COMMON_AGENT_CONFIG -Dorg.gradle.jvmargs=-XX:+HeapDumpOnOutOfMemoryError
-    - GRADLE_OPTS="-Xmx3072m" DD_TAGS="test.configuration.variant:debug" ./gradlew :unitTestDebugIntegrations --no-daemon --build-cache --gradle-user-home cache/ -Dorg.gradle.jvmargs=-javaagent:$DD_TRACER_FOLDER/dd-java-agent.jar=$DD_COMMON_AGENT_CONFIG -Dorg.gradle.jvmargs=-XX:+HeapDumpOnOutOfMemoryError
-  artifacts:
-    when: always
-    expire_in: 1 week
-    reports:
-      junit: "**/build/test-results/testDebugUnitTest/*.xml"
-    paths:
-      - "*.hprof"
-
-test:tools:
-  tags: [ "arch:amd64" ]
-  image: $CI_IMAGE_DOCKER
-  stage: test
-  timeout: 1h
-  cache:
-    key: $CI_COMMIT_REF_SLUG
-    paths:
-      - cache/caches/
-      - cache/notifications/
-    policy: pull
-  script:
-    - rm -rf ~/.gradle/daemon/
-    - export DD_AGENT_HOST="$BUILDENV_HOST_IP"
-    - GRADLE_OPTS="-Xmx3072m" ./gradlew :unitTestTools --stacktrace --no-daemon --build-cache --gradle-user-home cache/
-
-test:kover:
-  tags: [ "arch:amd64" ]
-  image: $CI_IMAGE_DOCKER
-  stage: test
-  timeout: 1h
-  cache:
-    key: $CI_COMMIT_REF_SLUG
-    paths:
-      - cache/caches/
-      - cache/notifications/
-  script:
-    - pip3 install datadog
-    - rm -rf ~/.gradle/daemon/
-    - export DD_AGENT_HOST="$BUILDENV_HOST_IP"
-    - export DD_API_KEY=$(aws ssm get-parameter --region us-east-1 --name ci.dd-sdk-android.api_key --with-decryption --query "Parameter.Value" --out text)
-    - export DD_APP_KEY=$(aws ssm get-parameter --region us-east-1 --name ci.dd-sdk-android.app_key --with-decryption --query "Parameter.Value" --out text)
-    - CODECOV_TOKEN=$(aws ssm get-parameter --region us-east-1 --name ci.dd-sdk-android.codecov-token  --with-decryption --query "Parameter.Value" --out text)
-    - GRADLE_OPTS="-Xmx3072m" DD_TAGS="test.configuration.variant:release" ./gradlew :dd-sdk-android-core:koverXmlReportRelease  --no-daemon --build-cache --gradle-user-home cache/ -Dorg.gradle.jvmargs=-javaagent:$DD_TRACER_FOLDER/dd-java-agent.jar=$DD_COMMON_AGENT_CONFIG -Dorg.gradle.jvmargs=-XX:+HeapDumpOnOutOfMemoryError
-    - GRADLE_OPTS="-Xmx3072m" DD_TAGS="test.configuration.variant:release" ./gradlew :dd-sdk-android-internal:koverXmlReportRelease  --no-daemon --build-cache --gradle-user-home cache/ -Dorg.gradle.jvmargs=-javaagent:$DD_TRACER_FOLDER/dd-java-agent.jar=$DD_COMMON_AGENT_CONFIG -Dorg.gradle.jvmargs=-XX:+HeapDumpOnOutOfMemoryError
-    - GRADLE_OPTS="-Xmx3072m" DD_TAGS="test.configuration.variant:release" ./gradlew :koverReportFeatures  --no-daemon --build-cache --gradle-user-home cache/ -Dorg.gradle.jvmargs=-javaagent:$DD_TRACER_FOLDER/dd-java-agent.jar=$DD_COMMON_AGENT_CONFIG -Dorg.gradle.jvmargs=-XX:+HeapDumpOnOutOfMemoryError
-    - GRADLE_OPTS="-Xmx3072m" DD_TAGS="test.configuration.variant:release" ./gradlew :koverReportIntegrations  --no-daemon --build-cache --gradle-user-home cache/ -Dorg.gradle.jvmargs=-javaagent:$DD_TRACER_FOLDER/dd-java-agent.jar=$DD_COMMON_AGENT_CONFIG -Dorg.gradle.jvmargs=-XX:+HeapDumpOnOutOfMemoryError
-    - bash <(cat ./codecov.sh) -t $CODECOV_TOKEN
-  artifacts:
-    when: always
-    expire_in: 1 week
-    reports:
-      junit: "**/build/test-results/testReleaseUnitTest/*.xml"
-    paths:
-      - "*.hprof"
 
 # TEST PYRAMID
 # the steps in this section should reflect our test pyramid strategy
@@ -463,6 +343,7 @@ test-pyramid:publish-benchmark-synthetics:
   timeout: 1h
   only:
     - develop
+    - yl/sr-opt/bitmap-compress-snapshot
   script:
     - mkdir -p ./config/
     - aws ssm get-parameter --region us-east-1 --name ci.dd-sdk-android.gradle-properties --with-decryption --query "Parameter.Value" --out text >> ./gradle.properties
@@ -476,7 +357,7 @@ test-pyramid:publish-benchmark-synthetics:
     - GRADLE_OPTS="-Xmx4096M" ./gradlew :sample:benchmark:packageRelease --stacktrace --no-daemon
     - npm update -g @datadog/datadog-ci
     - echo "Using datadog-ci $(npx @datadog/datadog-ci version)"
-    - npx @datadog/datadog-ci synthetics upload-application --appKey "$BM_DD_APP_KEY" --apiKey "$BM_DD_API_KEY" --mobileApp "sample/benchmark/build/outputs/apk/release/benchmark-release.apk" --mobileApplicationId "$BM_MOBILE_APP_ID" --versionName "$CI_COMMIT_SHORT_SHA" --latest
+    - npx @datadog/datadog-ci synthetics upload-application --appKey "$BM_DD_APP_KEY" --apiKey "$BM_DD_API_KEY" --mobileApp "sample/benchmark/build/outputs/apk/release/benchmark-release.apk" --mobileApplicationId "$BM_MOBILE_APP_ID" --versionName "remove-telemetry-3"
   artifacts:
     when: always
     expire_in: 1 week

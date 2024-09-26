@@ -1,7 +1,6 @@
 package com.datadog.benchmark.exporter
 
 import android.os.Build
-import com.datadog.android.BuildConfig
 import com.datadog.benchmark.DatadogExporterConfiguration
 import com.datadog.benchmark.internal.DatadogHttpClient
 import com.datadog.benchmark.internal.model.BenchmarkContext
@@ -20,7 +19,7 @@ internal class DatadogMetricExporter(datadogExporterConfiguration: DatadogExport
         scenario = datadogExporterConfiguration.scenario,
         applicationId = datadogExporterConfiguration.applicationId ?: UNKNOWN_TAG_VALUE,
         intervalInSeconds = datadogExporterConfiguration.intervalInSeconds,
-        env = BuildConfig.BUILD_TYPE
+        env = "beta"
     )
     private val metricHttpClient: DatadogHttpClient = DatadogHttpClient(
         benchmarkContext,

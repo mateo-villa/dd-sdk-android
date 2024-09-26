@@ -7,7 +7,6 @@
 package com.datadog.benchmark.exporter
 
 import android.os.Build
-import com.datadog.android.BuildConfig
 import com.datadog.benchmark.DatadogExporterConfiguration
 import com.datadog.benchmark.internal.BenchmarkSpanToSpanEventMapper
 import com.datadog.benchmark.internal.DatadogHttpClient
@@ -25,7 +24,7 @@ internal class DatadogSpanExporter(datadogExporterConfiguration: DatadogExporter
         scenario = datadogExporterConfiguration.scenario,
         applicationId = datadogExporterConfiguration.applicationId ?: UNKNOWN_TAG_VALUE,
         intervalInSeconds = datadogExporterConfiguration.intervalInSeconds,
-        env = BuildConfig.BUILD_TYPE
+        env = "beta"
     )
 
     private val httpClient: DatadogHttpClient = DatadogHttpClient(
